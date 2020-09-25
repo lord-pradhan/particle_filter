@@ -1,5 +1,6 @@
 #include <cmath>
 #include "utils.cpp"
+#include <random>
 /*
 Odometry Motion Model from Probabilistic Robotics Chapter 5 
 */
@@ -8,10 +9,10 @@ class MotionModel{
 
 private:
 	
-	float alpha1 = a1;
-	float alpha2 = a2;
-	float alpha3 = a3;
-	float alpha4 = a4;
+	float alpha1;
+	float alpha2;
+	float alpha3;
+	float alpha4;
 
 	MotionModel(float a1, float a2, float a3, float a4)
 	{
@@ -23,6 +24,16 @@ private:
 	}
 
 public:
+
+	double normaldist(double mean, double stddev)
+	{
+
+		std::default_random_engine generator;
+    	std::normal_distribution<double> distribution(mean,stddev);
+    	double sample = distribution(generator);
+		return sample;
+	}
+
 	odomMsg update(odomMsg u_t0, odomMsg u_t1, odomMsg x_t0)
 	{
 		double delta_rot1;
@@ -65,9 +76,9 @@ public:
 		delta_trans = sqrt((x_bar_p - x_bar)*(x_bar_p - x_bar) + (y_bar_p - y_bar)*(y_bar_p - y_bar));
 		delta_rot2 = theta_bar_p - theta_bar - delta_rot1;
 
-		delta_rot1_hat = delta_rot1 - normaldist(0,alpha1*abs(delta_rot1) + alpha2*abs(delta_trans));
-		delta_trans_hat = delta_trans - normaldist(0,alpha3*abs(delta_trans) + alpha4*abs(delta_rot1 + delta_rot2));
-		delta_rot2_hat = delta_rot2 - normaldist(0,alpha1*abs(delta_rot2) + alpha2*abs(delta_trans));
+		delta_rot1_hat = delta_rot1 - normaldist(0.0,alpha1*abs(delta_rot1) + alpha2*abs(delta_trans));
+		delta_trans_hat = delta_trans - normaldist(0.0,alpha3*abs(delta_trans) + alpha4*abs(delta_rot1 + delta_rot2));
+		delta_rot2_hat = delta_rot2 - normaldist(0.0,alpha1*abs(delta_rot2) + alpha2*abs(delta_trans));
 
 		x_p = x + delta_trans_hat*cos(theta+delta_rot1_hat);
 		y_p = y + delta_trans_hat*sin(theta+delta_rot1_hat);
