@@ -1,0 +1,6 @@
+
+
+class SensorModel{
+public:
+	SensorModel()
+};
