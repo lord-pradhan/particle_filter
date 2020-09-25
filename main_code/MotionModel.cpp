@@ -5,7 +5,6 @@ Odometry Motion Model from Probabilistic Robotics Chapter 5
 */
 
 class MotionModel{
-<<<<<<< HEAD
 
 	MotionModel(float a1, float a2, float a3, float a4)
 	{
@@ -36,14 +35,6 @@ class MotionModel{
 		x_t.theta = theta_p;
 
 		return x_t; 
-=======
-public:
-	MotionModel(){
 
-	}
-
-	odomMsg update(odomMsg u_t0, odomMsg u_t1, odomMsg x_t0){
-
->>>>>>> 609b1f7d5304bf857861c404c4ccad73445ea837
 	}
 };
