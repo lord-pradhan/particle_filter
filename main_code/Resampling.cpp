@@ -1,7 +1,7 @@
 
 
 class Resampling{
-
+public:
 	Resampling(){}
 
 	vector< wtOdomMsg > multinomial_sampler(vector< wtOdomMsg > X_bar){}

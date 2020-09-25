@@ -7,7 +7,7 @@ using namespace std;
 
 class MapReader{
 private:
-	vector<vector<double>> occupancy_map;
+	vector<vector<double>> prob;
 	int resolution, size_x, size_y, global_mapsize_x, global_mapsize_y, autoshifted_x, autoshifted_y;
 
 public:		
