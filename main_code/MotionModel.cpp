@@ -6,6 +6,7 @@ Odometry Motion Model from Probabilistic Robotics Chapter 5
 
 class MotionModel{
 
+private:
 	MotionModel(float a1, float a2, float a3, float a4)
 	{
 		// Error Parameters
@@ -15,6 +16,7 @@ class MotionModel{
 		float alpha4 = a4;
 	}
 
+public:
 	odomMsg update(odomMsg u_t0, odomMsg u_t1, odomMsg x_t0)
 	{
 		double delta_rot1;
