@@ -29,6 +29,7 @@ def init_particles_random(num_particles, occupancy_map):
 
     # initialize [x, y, theta] positions in world_frame for all particles
     y0_vals = np.random.uniform( 0, 7000, (num_particles, 1) )
+    print y0_vals
     x0_vals = np.random.uniform( 3000, 7000, (num_particles, 1) )
     theta0_vals = np.random.uniform( -3.14, 3.14, (num_particles, 1) )
 
@@ -76,7 +77,7 @@ def main():
     sensor_model = SensorModel(occupancy_map)
     resampler = Resampling()
 
-    num_particles = 500
+    num_particles = 5
     X_bar = init_particles_random(num_particles, occupancy_map)
 
     vis_flag = 1
