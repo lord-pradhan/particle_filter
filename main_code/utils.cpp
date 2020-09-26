@@ -23,7 +23,7 @@ public:
 	wtOdomMsg(){}
 
 	wtOdomMsg(odomMsg odomIn, double wtIn){
-		x = odomIn.x; y = odomIn.y; z = odomIn.z; wt = wtIn;
+		x = odomIn.x; y = odomIn.y; theta = odomIn.theta; wt = wtIn;
 	}
 
 	wtOdomMsg(double x_init, double y_init, double theta_init, double wt_init){
