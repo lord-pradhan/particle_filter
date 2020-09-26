@@ -33,6 +33,15 @@ public:
 		}
 
 		occupancy_map = map->prob;
+		for(int i = 0; i < occupancy_map.size(); i++)
+			for(int j = 0; j < occupancy_map[0].size(); j++)
+			{
+				if (occupancy_map[i][j] < 0 || occupancy_map[i][j] > 0.5)
+					occupancy_map[i][j] = 1;
+				else
+					occupancy_map[i][j] = 0;
+
+			}
 	}
 
 	void visualize_map(Mat image)
@@ -44,6 +53,7 @@ public:
 	}
 
 	vector<vector<double>> get_map(){return occupancy_map;}
+	vector<vector<double>> get_map_prob(){return map->prob;}
 	int get_map_resolution(){return map->resolution;}
 	int get_map_size_x(){return map->size_x;}
 	int get_map_size_y(){return map->size_y;}
@@ -60,7 +70,7 @@ public:
 	    fprintf(stderr, "# Could not open file %s\n", mapName);
 	    return -1;
 	  }
-	  fprintf(stderr, "# Reading map: %s\n", mapName);
+	  fprintf(stderr, "\n# Reading map: %s\n", mapName);
 	  while((fgets(line, 256, fp) != NULL)
 		&& (strncmp("global_map[0]", line , 13) != 0)) {
 	    if(strncmp(line, "robot_specifications->resolution", 32) == 0)
