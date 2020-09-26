@@ -42,8 +42,8 @@ vector<wtOdomMsg> init_particles_freespace(int num_particles, vector<vector<doub
 
 int main(){
 
-	char* path_map = '../data/map/wean.dat';
-	char* path_log = '../data/log/robotdata1.log';
+	char* path_map = 'data/map/wean.dat';
+	char* path_log = 'data/log/robotdata1.log';
 
 	MapReader map_obj = MapReader(path_map);
 	vector<vector<double>> occupancy_map = map_obj->get_map();
