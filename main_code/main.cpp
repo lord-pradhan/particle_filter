@@ -17,6 +17,8 @@ using namespace std;
 
 #include "MapReader.cpp"
 #include "utils.cpp"
+#include "MotionModel.cpp"
+#include "Resampling.cpp"
 
 void visualize_map_with_particles(MapReader &map_obj, vector<wtOdomMsg> &particles)
 {
@@ -91,7 +93,8 @@ vector<wtOdomMsg> init_particles_freespace(int num_particles, MapReader &map_obj
 	return X_bar_init;
 }
 
-int main(){
+int main()
+{
 
 	const char* path_map = "data/map/wean.dat";
 	const char* path_log = "data/log/robotdata1.log";
@@ -99,14 +102,17 @@ int main(){
 	MapReader map_obj = MapReader(path_map);
 	vector<vector<double>> occupancy_map = map_obj.get_map();
 
-	int num_particles = 5000;
+	int num_particles = 2000;
 	// vector<wtOdomMsg> particles = init_particles_random(num_particles, map_obj);
 	vector<wtOdomMsg> particles = init_particles_freespace(num_particles, map_obj);
 
-	bool vis_flag = true;
+	bool visualize_initial = true;
 
-	if(vis_flag)
+	if(visualize_initial)
 		visualize_map_with_particles(map_obj, particles);
+
+	Resampling rs;
+	rs.low_variance_sampler(particles);
 
 	// // initialize log file
 	// std::string logfile;
