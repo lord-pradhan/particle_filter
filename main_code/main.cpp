@@ -1,6 +1,6 @@
 // Header files
 #include <fstream>
-#include<vector>
+#include <vector>
 #include <sstream>
 #include <string>
 

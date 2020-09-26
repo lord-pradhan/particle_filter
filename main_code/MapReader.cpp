@@ -43,6 +43,8 @@ public:
 				img.at<Vec3b>(y,x) = (pr >= 0) ? Vec3b((1-pr)*255,(1-pr)*255,(1-pr)*255) : Vec3b(255,0,0);
 			}
 		}
+
+		occupancy_map = map->prob;
 	}
 
 	void visualize_map()
@@ -53,8 +55,7 @@ public:
 		waitKey();
 	}
 
-	vector<vector<double>> get_map(){return occupancy_map;}	
-	vector<vector<double>> get_map_prob(){return map->prob;}
+	vector<vector<double>> get_map(){return occupancy_map;}
 	int get_map_resolution(){return map->resolution;}
 	int get_map_size_x(){return map->size_x;}
 	int get_map_size_y(){return map->size_y;}
