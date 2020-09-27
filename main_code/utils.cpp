@@ -5,9 +5,17 @@ void tileToAbs(int tileX, int tileY, double& absX, double& absY, int resolution)
 	// absX = tileX*resolution
 }
 
-
 void absToTile(int& tileX, int& tileY, double absX, double absY, int resolution){
 	tileX = floor((double) absX/resolution); tileY = floor((double)  absY/resolution);
+}
+
+bool inRange(int tileX, int tileY, const MapReader& map_obj){
+	bool returnVal = true;
+	int Xmax = map_obj->get_map().size(), Ymax = map_obj->get_map()[0].size();
+	
+	if(tileX<0 || tileX>Xmax || tileY<0 || tileY>Ymax) returnVal = false;
+
+	return returnVal;
 }
 
 class odomMsg
