@@ -11,7 +11,7 @@ private:
 	} map_type;
 
 	map_type* map;
-	vector<vector<double>> occupancy_map;
+	vector<vector<int>> occupancy_map;
 	Mat img;
 
 public:
@@ -32,11 +32,14 @@ public:
 			}
 		}
 
-		occupancy_map = map->prob;
-		for(int i = 0; i < occupancy_map.size(); i++)
-			for(int j = 0; j < occupancy_map[0].size(); j++)
+		vector< int > temp1(map->prob[0].size(), 0);
+		vector<vector<int>> temp2(map->prob.size(), temp1);
+		occupancy_map = temp2;
+		
+		for(int i = 0; i < map->prob.size(); i++)
+			for(int j = 0; j < map->prob[0].size(); j++)
 			{
-				if (occupancy_map[i][j] < 0 || occupancy_map[i][j] > 0.5)
+				if (map->prob[i][j] < 0 || map->prob[i][j] > 0.5)
 					occupancy_map[i][j] = 1;
 				else
 					occupancy_map[i][j] = 0;
@@ -52,7 +55,7 @@ public:
 		waitKey();
 	}
 
-	vector<vector<double>> get_map(){return occupancy_map;}
+	vector<vector<int>> get_map(){return occupancy_map;}
 	vector<vector<double>> get_map_prob(){return map->prob;}
 	int get_map_resolution(){return map->resolution;}
 	int get_map_size_x(){return map->size_x;}

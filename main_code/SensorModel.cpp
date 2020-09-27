@@ -17,7 +17,7 @@ public:
 		wt_gauss=1.0; wt_short=1.0; wt_max=1.0; wt_rand=1.0;
 	}
 
-	double calcCDF(double upper_lim){
+	double calcCDF(double x){
 		// constants
 	    double a1 =  0.254829592;
 	    double a2 = -0.284496736;
@@ -39,10 +39,11 @@ public:
 	    return 0.5*(1.0 + sign*y);
 	}
 
-	double beam_range_finder_model(vector<double> z_t1_arr, odomMsg x_t1){
+	double beam_range_finder_model(vector<int> z_t1_arr, odomMsg x_t1){
 				
 		// initialize stuff for raycasting		
-		odomMsg laserPose( x_t1.x + laserOffset*cos(x_t1.theta), x_t1.y + laserOffset*sin(x_t1.theta), theta );
+		odomMsg laserPose( x_t1.x + laserOffset*cos(x_t1.theta), x_t1.y + laserOffset*sin(x_t1.theta), 
+						x_t1.theta );
 		double startAbsX = laserPose.x, startAbsY = laserPose.y; 
 
 		// initialize stuff for prob distributions		
@@ -65,7 +66,7 @@ public:
 			double currAbsX = startAbsX, currAbsY = startAbsY;
 			absToTile(tileX, tileY, currAbsX, currAbsY, resolution);
 
-			while(inRange(tileX, tileY) && map_obj->get_map()[tileY][tileX]==0){								
+			while(inRangeMap(tileX, tileY, map_obj.get_map()) && map_obj.get_map()[tileY][tileX]==0){								
 
 				double dtX = fabs(dirX) > 1e-5 ? ( (tileX+1)*resolution - currAbsX )/dirX : std::numeric_limits<double>::max();
 				double dtY = fabs(dirY) > 1e-5 ? ( (tileY+1)*resolution - currAbsY )/dirY : std::numeric_limits<double>::max();

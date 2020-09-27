@@ -19,6 +19,7 @@ using namespace std;
 #include "MapReader.cpp"
 #include "utils.cpp"
 #include "MotionModel.cpp"
+#include "SensorModel.cpp"
 #include "Resampling.cpp"
 
 void visualize_map_with_particles(MapReader &map_obj, vector<wtOdomMsg> &particles)
@@ -124,110 +125,112 @@ int main()
 	const char* path_log = "data/log/robotdata1.log";
 
 	MapReader map_obj = MapReader(path_map);
-	vector<vector<double>> occupancy_map = map_obj.get_map();
+	vector<vector<int>> occupancy_map = map_obj.get_map();
 
 	int num_particles = 2000;
 	// vector<wtOdomMsg> particles = init_particles_random(num_particles, map_obj);
-	vector<wtOdomMsg> particles = init_particles_freespace(num_particles, map_obj);
+	vector<wtOdomMsg> X_bar_init = init_particles_freespace(num_particles, map_obj);
 
 	bool visualize_initial = false;
 
-
 	if(visualize_initial)
-		visualize_map_with_particles(map_obj, particles);
+		visualize_map_with_particles(map_obj, X_bar_init);
 
 	bool motionmodel_test = true;
 
 	if(motionmodel_test)
 		test_motion_model(map_obj);
 
-	// // initialize log file
-	// std::string logfile;
-	// std::ifstream infile(path_log);
+	// initialize log file
+	std::string logfile;
+	std::ifstream infile(path_log);
 
-	// MotionModel motion();
-	// SensorModel sensor(map_obj);
-	// Resampling resampler();
+	MotionModel motion(0.001,0.001,0.06,0.001);
+	SensorModel sensor(map_obj);
+	Resampling resampler;
 
 	// bool vis_flag = true;
 
 	// if(vis_flag)
-	// 	visualize_map(occupancy_map);
+	// 	visualize_map_with_particles(occupancy_map);
 
-	// bool first_time_idx = true;
+	bool first_time_idx = true;
 
-	// // parse log file
-	// std::string line;
-	// int time_step=0;
-	// while(std::getline(infile, line)){
+	// parse log file
+	std::string line;
+	int time_step=0; 
+	auto X_bar = X_bar_init;
+	odomMsg u_t0;
 
-	// 	time_step++;
+	while(std::getline(infile, line)){
 
-	// 	std::istringstream iss(line);
-	// 	char meas_type;
+		time_step++;
 
-	// 	if(!(iss >> meas_type)) { cout<<"Error while reading in meas_type"<<endl; break; }
+		std::istringstream iss(line);
+		char meas_type;
 
-	// 	vector<double> meas_vals;
-	// 	double tempStream;
+		if(!(iss >> meas_type)) { cout<<"Error while reading in meas_type"<<endl; break; }
 
-	// 	while(iss >> tempStream)
-	// 		meas_vals.push_back(tempStream);
+		vector<double> meas_vals;
+		double tempStream;
 
-	// 	cout<<"finished streaming"<<endl;
+		while(iss >> tempStream)
+			meas_vals.push_back(tempStream);
 
-	// 	odomMsg odometry_robot(meas_vals[0], meas_vals[1], meas_vals[2]);
+		cout<<"finished streaming"<<endl;
 
-	// 	double time_stamp = meas_vals.back();
+		odomMsg odometry_robot(meas_vals[0], meas_vals[1], meas_vals[2]);
 
-	// 	vector<int> ranges;
-	// 	if(meas_type=='L'){
-	// 		odomMsg odometry_laser(meas_vals[3], meas_vals[4], meas_vals[5]);
-	// 		int rangeSize = meas_vals.size();			
+		double time_stamp = meas_vals.back();
 
-	// 		for(int i=6; i<rangeSize-1; i++) 
-	// 			ranges.push_back(meas_vals[i]);			
-	// 	}
+		vector<int> ranges;
+		if(meas_type=='L'){
+			odomMsg odometry_laser(meas_vals[3], meas_vals[4], meas_vals[5]);
+			int rangeSize = meas_vals.size();			
 
-	// 	cout<< "Processing time step "<< time_step <<" at time "<<time_stamp<<"s"<<endl;
+			for(int i=6; i<rangeSize-1; i++) 
+				ranges.push_back(meas_vals[i]);			
+		}
 
-	// 	if(first_time_idx){
+		cout<< "Processing time step "<< time_step <<" at time "<<time_stamp<<"s"<<endl;
 
-	// 		auto u_t0 = odometry_robot;
-	// 		first_time_idx = false;
-	// 		continue;
-	// 	}
+		if(first_time_idx){
 
-	// 	vector<wtOdomMsg> X_bar_new = X_bar;
-	// 	auto u_t1 = odometry_robot;
+			u_t0 = odometry_robot;
+			first_time_idx = false;
+			continue;
+		}
 
-	// 	for(int i=0; i<num_particles; i++){
+		vector<wtOdomMsg> X_bar_new = X_bar;
+		auto u_t1 = odometry_robot;
 
-	// 		// Motion model
-	// 		odomMsg x_t0(X_bar[i].x, X_bar[i].y, X_bar[i].theta);
-	// 		odomMsg x_t1 = motion.update(u_t0, u_t1, x_t0);
+		for(int i=0; i<num_particles; i++){
 
-	// 		// Sensor model
-	// 		if(meas_type=='L'){
-	// 			vector<int> z_t = ranges;
-	// 			double w_t = sensor.beam_range_finder_model(z_t, x_t1);
+			// Motion model
+			odomMsg x_t0(X_bar[i].x, X_bar[i].y, X_bar[i].theta);
+			odomMsg x_t1 = motion.update(u_t0, u_t1, x_t0);
 
-	// 			X_bar_new[i] = wtOdomMsg(x_t1, w_t);
-	// 		}
-	// 		else{
-	// 			X_bar_new[i] = wtOdomMsg(x_t1, X_bar[i].wt);
-	// 		}			
-	// 	}
+			// Sensor model
+			if(meas_type=='L'){
+				vector<int> z_t = ranges;
+				double w_t = sensor.beam_range_finder_model(z_t, x_t1);
 
-	// 	X_bar = X_bar_new;
-	// 	u_t0 = u_t1;
+				X_bar_new[i] = wtOdomMsg(x_t1, w_t);
+			}
+			else{
+				X_bar_new[i] = wtOdomMsg(x_t1, X_bar[i].wt);
+			}			
+		}
 
-	// 	// Resampling
-	// 	X_bar = resampler.low_variance_sampler(X_bar);
+		X_bar = X_bar_new;
+		u_t0 = u_t1;
 
-	// 	if(vis_flag)
-	// 		visualize_timestep(X_bar,time_step);
-	// }
+		// Resampling
+		X_bar = resampler.low_variance_sampler(X_bar);
+
+		// if(vis_flag)
+		// 	visualize_timestep(X_bar,time_step);
+	}
 
 	return 0;
 }
