@@ -8,9 +8,9 @@ using namespace std;
 
 void visualize_map(){}
 
-void visualize_timestep(X_bar, tstep){}
+void visualize_timestep(){}
 
-vector<wtOdomMsg> init_particles_random(int num_particles, vector<vector<double>> occupancy_map){
+vector<wtOdomMsg> init_particles_random(int num_particles, const vector<vector<double>>& occupancy_map){
 
 	// Create a random device and use it to generate a random seed
     std::random_device myRandomDevice;
@@ -53,7 +53,7 @@ int main(){
 	std::ifstream infile(path_log);
 
 	MotionModel motion();
-	SensorModel sensor();
+	SensorModel sensor(map_obj);
 	Resampling resampler();
 
 	int num_particles = 500;

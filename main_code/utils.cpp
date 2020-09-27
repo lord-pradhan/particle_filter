@@ -1,3 +1,14 @@
+#include <math.h>
+
+// helper functions
+void tileToAbs(int tileX, int tileY, double& absX, double& absY, int resolution){
+	// absX = tileX*resolution
+}
+
+
+void absToTile(int& tileX, int& tileY, double absX, double absY, int resolution){
+	tileX = floor((double) absX/resolution); tileY = floor((double)  absY/resolution);
+}
 
 
 class odomMsg
