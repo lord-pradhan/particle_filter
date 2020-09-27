@@ -8,11 +8,13 @@ private:
 	// params
 	int max_range;
 	double laserOffset, gauss_sd, lambda_short;
+	double wt_gauss, wt_short, wt_max, wt_rand;
 
 public:
 	SensorModel(const MapReader& map_objIn): map_obj(map_objIn){
 		max_range = 8183; laserOffset = 25.0;
 		gauss_sd = 1.0; lambda_short = 1.0;
+		wt_gauss=1.0; wt_short=1.0; wt_max=1.0; wt_rand=1.0;
 	}
 
 	double calcCDF(double upper_lim){
