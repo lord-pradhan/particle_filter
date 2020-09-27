@@ -132,6 +132,7 @@ int main()
 
 	bool visualize_initial = false;
 
+
 	if(visualize_initial)
 		visualize_map_with_particles(map_obj, particles);
 
@@ -145,7 +146,7 @@ int main()
 	// std::ifstream infile(path_log);
 
 	// MotionModel motion();
-	// SensorModel sensor();
+	// SensorModel sensor(map_obj);
 	// Resampling resampler();
 
 	// bool vis_flag = true;
