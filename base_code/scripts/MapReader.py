@@ -16,12 +16,13 @@ class MapReader:
         self._size_x = self._occupancy_map.shape[0] * self._resolution
         self._size_y = self._occupancy_map.shape[1] * self._resolution
 
-        print 'Finished reading 2D map of size : ' + '(' + str(self._size_x) + ',' + str(self._size_y) + ')'
+        print ('Finished reading 2D map of size : ' + '(' + str(self._size_x) + ',' + str(self._size_y) + ')')
 
     def visualize_map(self):
         fig = plt.figure()
         # plt.switch_backend('TkAgg')
-        mng = plt.get_current_fig_manager(); mng.resize(*mng.window.maxsize())
+        mng = plt.get_current_fig_manager(); 
+        # mng.resize(*mng.window.maxsize())
         plt.ion(); plt.imshow(self._occupancy_map, cmap='Greys'); plt.axis([0, 800, 0, 800]); plt.draw()
         plt.pause(0)
 

@@ -1,6 +1,3 @@
-#include <cmath>
-#include "utils.cpp"
-#include <random>
 /*
 Odometry Motion Model from Probabilistic Robotics Chapter 5 
 */
@@ -9,10 +6,14 @@ class MotionModel{
 
 private:
 	
-	float alpha1;
-	float alpha2;
-	float alpha3;
-	float alpha4;
+	double alpha1;
+	double alpha2;
+	double alpha3;
+	double alpha4;
+
+	std::default_random_engine generator;
+
+public:
 
 	MotionModel(float a1, float a2, float a3, float a4)
 	{
@@ -23,12 +24,8 @@ private:
 		alpha4 = a4;
 	}
 
-public:
-
 	double normaldist(double mean, double stddev)
 	{
-
-		std::default_random_engine generator;
     	std::normal_distribution<double> distribution(mean,stddev);
     	double sample = distribution(generator);
 		return sample;

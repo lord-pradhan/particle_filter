@@ -1,15 +1,3 @@
-#include <stdio.h>
-#include <cstring>
-#include <cstdlib>
-#include <vector>
-#include <iostream>
-#include "opencv2/imgcodecs.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
-
-using namespace cv;
-using namespace std;
-
 class MapReader
 {
 
@@ -28,7 +16,7 @@ private:
 
 public:
 
-	MapReader(char* mapName)
+	MapReader(const char* mapName)
 	{
 		map = new map_type;
 		int map_success = read_beesoft_map(mapName, map);
@@ -39,27 +27,39 @@ public:
 		{
 			for (int x = 0; x < map->size_x; x++)
 			{
-				double pr = map->prob[x][map->size_y - 1 - y];
-				img.at<Vec3b>(y,x) = (pr >= 0) ? Vec3b((1-pr)*255,(1-pr)*255,(1-pr)*255) : Vec3b(255,0,0);
+				double pr = map->prob[x][y];
+				img.at<Vec3b>(x,y) = (pr >= 0) ? Vec3b((1-pr)*255,(1-pr)*255,(1-pr)*255) : Vec3b(255,0,0);
 			}
 		}
+
+		occupancy_map = map->prob;
+		for(int i = 0; i < occupancy_map.size(); i++)
+			for(int j = 0; j < occupancy_map[0].size(); j++)
+			{
+				if (occupancy_map[i][j] < 0 || occupancy_map[i][j] > 0.5)
+					occupancy_map[i][j] = 1;
+				else
+					occupancy_map[i][j] = 0;
+
+			}
 	}
 
-	void visualize_map()
+	void visualize_map(Mat image)
 	{
 		const char* source_window = "Display Map";
 		namedWindow( source_window );
-		imshow(source_window, img);
+		imshow(source_window, image);
 		waitKey();
 	}
 
-	vector<vector<double>> get_map(){return occupancy_map;}	
+	vector<vector<double>> get_map(){return occupancy_map;}
 	vector<vector<double>> get_map_prob(){return map->prob;}
 	int get_map_resolution(){return map->resolution;}
 	int get_map_size_x(){return map->size_x;}
 	int get_map_size_y(){return map->size_y;}
+	Mat get_img(){return img;}
 
-	int read_beesoft_map(char *mapName, map_type *map)
+	int read_beesoft_map(const char *mapName, map_type *map)
 	{
 	  int x, y, count;
 	  float temp;
@@ -70,7 +70,7 @@ public:
 	    fprintf(stderr, "# Could not open file %s\n", mapName);
 	    return -1;
 	  }
-	  fprintf(stderr, "# Reading map: %s\n", mapName);
+	  fprintf(stderr, "\n# Reading map: %s\n", mapName);
 	  while((fgets(line, 256, fp) != NULL)
 		&& (strncmp("global_map[0]", line , 13) != 0)) {
 	    if(strncmp(line, "robot_specifications->resolution", 32) == 0)
