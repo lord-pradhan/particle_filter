@@ -8,6 +8,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <iostream>
+#include <ctime>
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
@@ -93,6 +94,29 @@ vector<wtOdomMsg> init_particles_freespace(int num_particles, MapReader &map_obj
 	return X_bar_init;
 }
 
+void test_motion_model(MapReader &map_obj)
+{
+	MotionModel mm(0.001,0.001,0.06,0.001); 
+	vector<wtOdomMsg> particles;
+	int numparticles = 1000;
+	for(int i = 0; i < numparticles; i++)
+		particles.push_back(wtOdomMsg(4000,4000,0,0));
+	visualize_map_with_particles(map_obj, particles);
+	odomMsg ut0(0,0,0);
+	odomMsg ut1(0,100,0);
+
+	int numoftimesteps = 10;
+	for(int t = 0; t < numoftimesteps; t++)
+	{
+		for(int i = 0; i < numparticles; i++)
+		{
+			odomMsg xt = mm.update(ut0,ut1,odomMsg(particles[i].x,particles[i].y,particles[i].theta));
+			particles[i] = wtOdomMsg(xt,0);
+		}
+		visualize_map_with_particles(map_obj, particles);
+	}
+}
+
 int main()
 {
 
@@ -106,13 +130,15 @@ int main()
 	// vector<wtOdomMsg> particles = init_particles_random(num_particles, map_obj);
 	vector<wtOdomMsg> particles = init_particles_freespace(num_particles, map_obj);
 
-	bool visualize_initial = true;
+	bool visualize_initial = false;
 
 	if(visualize_initial)
 		visualize_map_with_particles(map_obj, particles);
 
-	Resampling rs;
-	rs.low_variance_sampler(particles);
+	bool motionmodel_test = true;
+
+	if(motionmodel_test)
+		test_motion_model(map_obj);
 
 	// // initialize log file
 	// std::string logfile;
