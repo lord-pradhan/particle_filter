@@ -1,4 +1,5 @@
 // Header files
+#include <math.h>
 #include <fstream>
 #include <vector>
 #include <sstream>
@@ -22,7 +23,7 @@ using namespace std;
 #include "SensorModel.cpp"
 #include "Resampling.cpp"
 
-void visualize_map_with_particles(MapReader &map_obj, vector<wtOdomMsg> &particles)
+void visualize_map_with_particles(MapReader map_obj, vector<wtOdomMsg> &particles)
 {
 	Mat imgwithparticles;
 	imgwithparticles = map_obj.get_img().clone();
@@ -127,7 +128,7 @@ int main()
 	MapReader map_obj = MapReader(path_map);
 	vector<vector<int>> occupancy_map = map_obj.get_map();
 
-	int num_particles = 2000;
+	int num_particles = 20;
 	// vector<wtOdomMsg> particles = init_particles_random(num_particles, map_obj);
 	vector<wtOdomMsg> X_bar_init = init_particles_freespace(num_particles, map_obj);
 
@@ -136,7 +137,7 @@ int main()
 	if(visualize_initial)
 		visualize_map_with_particles(map_obj, X_bar_init);
 
-	bool motionmodel_test = true;
+	bool motionmodel_test = false;
 
 	if(motionmodel_test)
 		test_motion_model(map_obj);
@@ -149,10 +150,7 @@ int main()
 	SensorModel sensor(map_obj);
 	Resampling resampler;
 
-	// bool vis_flag = true;
-
-	// if(vis_flag)
-	// 	visualize_map_with_particles(occupancy_map);
+	bool vis_flag = true;
 
 	bool first_time_idx = true;
 
@@ -177,7 +175,7 @@ int main()
 		while(iss >> tempStream)
 			meas_vals.push_back(tempStream);
 
-		cout<<"finished streaming"<<endl;
+		// cout<<"finished streaming"<<endl;
 
 		odomMsg odometry_robot(meas_vals[0], meas_vals[1], meas_vals[2]);
 
@@ -189,7 +187,7 @@ int main()
 			int rangeSize = meas_vals.size();			
 
 			for(int i=6; i<rangeSize-1; i++) 
-				ranges.push_back(meas_vals[i]);			
+				ranges.push_back(meas_vals[i]);	
 		}
 
 		cout<< "Processing time step "<< time_step <<" at time "<<time_stamp<<"s"<<endl;
@@ -198,6 +196,7 @@ int main()
 
 			u_t0 = odometry_robot;
 			first_time_idx = false;
+			// cout<<"entered first time idx"<<endl;
 			continue;
 		}
 
@@ -212,12 +211,18 @@ int main()
 
 			// Sensor model
 			if(meas_type=='L'){
-				vector<int> z_t = ranges;
-				double w_t = sensor.beam_range_finder_model(z_t, x_t1);
+				cout<<"entered lidar sensor model"<<endl;
+				int sizeLas = ranges.size();
+				vector<int> z_t_short;
+				for(int k=0; k<sizeLas; k+=5)
+					z_t_short.push_back(ranges[k]);
 
-				X_bar_new[i] = wtOdomMsg(x_t1, w_t);
+				double w_t = sensor.beam_range_finder_model(z_t_short, x_t1);
+
+				X_bar_new[i] = wtOdomMsg(x_t1, w_t);				
 			}
 			else{
+				// cout<<"entered imu sensor model"<<endl;
 				X_bar_new[i] = wtOdomMsg(x_t1, X_bar[i].wt);
 			}			
 		}
@@ -228,8 +233,8 @@ int main()
 		// Resampling
 		X_bar = resampler.low_variance_sampler(X_bar);
 
-		// if(vis_flag)
-		// 	visualize_timestep(X_bar,time_step);
+		if(vis_flag)
+			visualize_map_with_particles(map_obj, X_bar);
 	}
 
 	return 0;
