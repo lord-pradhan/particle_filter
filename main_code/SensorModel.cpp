@@ -3,6 +3,7 @@
 class SensorModel{
 private:
 	MapReader map_obj;
+	vector<vector<int>> occupancyMap;
 	int resolution;
 
 	// params
@@ -18,6 +19,7 @@ public:
 		truncate_gauss = 2.0;
 
 		resolution = map_obj.get_map_resolution();
+		occupancyMap = map_obj.get_map();
 	}
 
 	double calcCDF(double x){
@@ -43,7 +45,7 @@ public:
 	    return 0.5*(1.0 + sign*y);
 	}
 
-	double beam_range_finder_model(vector<int> z_t1_arr, odomMsg x_t1){
+	double beam_range_finder_model(const vector<int>& z_t1_arr, const odomMsg& x_t1){
 				
 		// initialize stuff for raycasting		
 		odomMsg laserPose( x_t1.x + laserOffset*cos(x_t1.theta), x_t1.y + laserOffset*sin(x_t1.theta), 
@@ -74,7 +76,7 @@ public:
 			absToTile(tileX, tileY, currAbsX, currAbsY, resolution);
 
 			// cout<<"before entering raycasting while loop, tileX is "<<tileX<<", tileY is "<<tileY<<endl;
-			while( inRangeMap(tileX, tileY, map_obj.get_map()) && map_obj.get_map()[tileY][tileX]==0 ){
+			while( inRangeMap(tileX, tileY, occupancyMap) && occupancyMap[tileY][tileX]==0 ){
 
 				double dtX = fabs(dirX) > 1e-5 ? ( (tileX+signDirX)*resolution - currAbsX )/dirX : std::numeric_limits<double>::max();
 				double dtY = fabs(dirY) > 1e-5 ? ( (tileY+signDirY)*resolution - currAbsY )/dirY : std::numeric_limits<double>::max();
@@ -103,7 +105,7 @@ public:
 				}
 
 			}
-			cout<<"z_true is "<<z_true<<", z_meas is "<<z_meas<<endl;
+			// cout<<"z_true is "<<z_true<<", z_meas is "<<z_meas<<endl;
 
 			/* Calculate probability */
 			double p_gauss, p_short, p_max, p_rand;

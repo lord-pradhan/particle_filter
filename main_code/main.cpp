@@ -128,7 +128,7 @@ int main()
 	MapReader map_obj = MapReader(path_map);
 	vector<vector<int>> occupancy_map = map_obj.get_map();
 
-	int num_particles = 20;
+	int num_particles = 20000;
 	// vector<wtOdomMsg> particles = init_particles_random(num_particles, map_obj);
 	vector<wtOdomMsg> X_bar_init = init_particles_freespace(num_particles, map_obj);
 
@@ -211,7 +211,7 @@ int main()
 
 			// Sensor model
 			if(meas_type=='L'){
-				cout<<"entered lidar sensor model"<<endl;
+				// cout<<"entered lidar sensor model"<<endl;
 				int sizeLas = ranges.size();
 				vector<int> z_t_short;
 				for(int k=0; k<sizeLas; k+=5)

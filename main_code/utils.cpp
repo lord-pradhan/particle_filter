@@ -9,7 +9,7 @@ void absToTile(int& tileX, int& tileY, double absX, double absY, int resolution)
 	tileX = floor((double) absX/resolution); tileY = floor((double)  absY/resolution);
 }
 
-bool inRangeMap(int tileX, int tileY, const vector<vector<int>> mapIn){
+bool inRangeMap(int tileX, int tileY, const vector<vector<int>>& mapIn){
 	bool returnVal = true;
 	int Ymax = mapIn.size(), Xmax = mapIn[0].size();
 	
