@@ -25,15 +25,20 @@ using namespace std;
 
 void visualize_map_with_particles(MapReader map_obj, vector<wtOdomMsg> &particles)
 {
+	const char* source_window = "Display Map";
 	Mat imgwithparticles;
 	imgwithparticles = map_obj.get_img().clone();
 	for(wtOdomMsg particle : particles)
 	{
 		double x = particle.x/map_obj.get_map_resolution();
 		double y = map_obj.get_map_size_y() - particle.y/map_obj.get_map_resolution();
-		imgwithparticles.at<Vec3b>(y,x) = Vec3b(0,0,255);
+		// imgwithparticles.at<Vec3b>(y,x) = Vec3b(0,0,255);
+		circle(imgwithparticles, Point(x,y), 1, Scalar(0,0,255), FILLED);
 	}
-	map_obj.visualize_map(imgwithparticles);
+	namedWindow( source_window );
+	imshow(source_window, imgwithparticles);
+	waitKey();
+	// map_obj.visualize_map(imgwithparticles);
 }
 
 // void visualize_timestep(X_bar, tstep){}
@@ -105,7 +110,7 @@ void test_motion_model(MapReader &map_obj)
 		particles.push_back(wtOdomMsg(4000,4000,0,0));
 	visualize_map_with_particles(map_obj, particles);
 	odomMsg ut0(0,0,0);
-	odomMsg ut1(0,100,0);
+	odomMsg ut1(100,100,0);
 
 	int numoftimesteps = 10;
 	for(int t = 0; t < numoftimesteps; t++)
@@ -119,6 +124,31 @@ void test_motion_model(MapReader &map_obj)
 	}
 }
 
+void test_sensor_model(MapReader &map_obj)
+{
+	SensorModel sm(map_obj);
+	vector<odomMsg> rays;
+	odomMsg xt(4000,4000,0);
+	sm.raycasting(rays,xt);
+
+	const char* source_window = "Display Map";
+	Mat imgwithrays;
+	imgwithrays = map_obj.get_img().clone();
+	double xt1 = xt.x/map_obj.get_map_resolution();
+	double yt1 = xt.y/map_obj.get_map_resolution();
+	for(odomMsg ray : rays)
+	{
+		double x = ray.x/map_obj.get_map_resolution();
+		double y = ray.y/map_obj.get_map_resolution();
+		line(imgwithrays, Point2f(x,y), Point2f(xt1,yt1), Scalar(0,255,0), 1);
+	}
+	circle(imgwithrays, Point(xt1,yt1), 2, Scalar(0,0,255), FILLED);
+	namedWindow( source_window );
+	imshow(source_window, imgwithrays);
+	waitKey();
+
+}
+
 int main()
 {
 
@@ -128,7 +158,7 @@ int main()
 	MapReader map_obj = MapReader(path_map);
 	vector<vector<int>> occupancy_map = map_obj.get_map();
 
-	int num_particles = 20000;
+	int num_particles = 200;
 	// vector<wtOdomMsg> particles = init_particles_random(num_particles, map_obj);
 	vector<wtOdomMsg> X_bar_init = init_particles_freespace(num_particles, map_obj);
 
@@ -141,6 +171,11 @@ int main()
 
 	if(motionmodel_test)
 		test_motion_model(map_obj);
+
+	bool sensormodel_test = false;
+
+	if(sensormodel_test)
+		test_sensor_model(map_obj);
 
 	// initialize log file
 	std::string logfile;
@@ -179,6 +214,8 @@ int main()
 
 		odomMsg odometry_robot(meas_vals[0], meas_vals[1], meas_vals[2]);
 
+		cout << odometry_robot.x << " " << odometry_robot.y << " " << odometry_robot.theta << endl;
+
 		double time_stamp = meas_vals.back();
 
 		vector<int> ranges;
@@ -203,8 +240,8 @@ int main()
 		vector<wtOdomMsg> X_bar_new = X_bar;
 		auto u_t1 = odometry_robot;
 
-		for(int i=0; i<num_particles; i++){
-
+		for(int i=0; i<num_particles; i++)
+		{
 			// Motion model
 			odomMsg x_t0(X_bar[i].x, X_bar[i].y, X_bar[i].theta);
 			odomMsg x_t1 = motion.update(u_t0, u_t1, x_t0);
@@ -213,10 +250,11 @@ int main()
 			if(meas_type=='L'){
 				// cout<<"entered lidar sensor model"<<endl;
 				int sizeLas = ranges.size();
-				vector<int> z_t_short;
-				for(int k=0; k<sizeLas; k+=5)
-					z_t_short.push_back(ranges[k]);
 
+				vector<int> z_t_short;
+				for(int k=0; k<sizeLas; k++)
+					z_t_short.push_back(ranges[k]);
+				// cout << "num lasers: " << z_t_short.size() << endl;
 				double w_t = sensor.beam_range_finder_model(z_t_short, x_t1);
 
 				X_bar_new[i] = wtOdomMsg(x_t1, w_t);				

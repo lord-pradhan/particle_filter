@@ -54,6 +54,7 @@ public:
 
 		// initialize stuff for prob distributions		
 		double log_p_tot=0.0;
+		double p_tot = 1;
 
 		// iterate through num of lasers
 		int numLasers = z_t1_arr.size();		
@@ -146,12 +147,74 @@ public:
 				p_rand=0.0;
 
 			double wt_norm = wt_gauss + wt_short + wt_max + wt_rand;
+			p_tot *= wt_norm;
 			log_p_tot +=  log(wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + 
 						wt_max/wt_norm*p_max + wt_rand/wt_norm*p_rand);
 			// cout<< "iterated probability is "<<(wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + wt_max/wt_norm*p_max + wt_rand/wt_norm*p_rand) << endl;
 		}
 		
-		cout<<"returned log probability is "<< log_p_tot<<endl;
+		// cout<<"returned log probability is "<< log_p_tot<<endl;
 		return log_p_tot;	
+	}
+
+	void raycasting(vector<odomMsg>& rays, odomMsg& x_t1){
+				
+		// initialize stuff for raycasting		
+		odomMsg laserPose( x_t1.x + laserOffset*cos(x_t1.theta), x_t1.y + laserOffset*sin(x_t1.theta), 
+						x_t1.theta );
+		double startAbsX = laserPose.x, startAbsY = laserPose.y; 
+
+		// iterate through num of lasers
+		int numLasers = 180;	
+
+		for(int i_las=0; i_las<numLasers; i_las++)
+		{
+
+			/* Raycasting operation */
+			double dir = laserPose.theta - PI/2.0 + (double) i_las * PI / numLasers;
+			double dirX = cos(dir), dirY = sin(dir);
+			double signDirX = dirX>0 ? 1 : -1;
+			double signDirY = dirY>0 ? 1 : -1;
+			// cout<<"signDirX is "<<signDirX<<", signDirY is "<<signDirY<<", dirX is "<<dirX<<", dirY is "<<dirY<<endl;
+
+			double t=0.0, z_true = 0.0; bool collided = false, skip_gauss = false;
+			int tileX, tileY;
+			double currAbsX = startAbsX, currAbsY = startAbsY;
+			absToTile(tileX, tileY, currAbsX, currAbsY, resolution);
+
+			// cout<<"before entering raycasting while loop, tileX is "<<tileX<<", tileY is "<<tileY<<endl;
+			while( inRangeMap(tileX, tileY, occupancyMap) && occupancyMap[tileY][tileX]==0 )
+			{
+
+				double dtX = fabs(dirX) > 1e-5 ? ( (tileX+signDirX)*resolution - currAbsX )/dirX : std::numeric_limits<double>::max();
+				double dtY = fabs(dirY) > 1e-5 ? ( (tileY+signDirY)*resolution - currAbsY )/dirY : std::numeric_limits<double>::max();
+				double dt;
+
+				if(dtX < dtY){
+					dt = dtX;
+					tileX += signDirX;
+				}
+				else if(dtY < dtX){
+					dt = dtY;
+					tileY += signDirY;
+				}
+				else{
+					dt = dtX; tileX += signDirX; tileY += signDirY;
+				}
+
+				t += dt;
+				currAbsX = startAbsX + t*dirX; currAbsY = startAbsY + t*dirY;
+				// cout<<"t is "<<t<<", currAbsX is "<<currAbsX<<", currAbsY is "<<currAbsY<<endl;
+				z_true = t; 
+
+				if(z_true > (max_range + truncate_gauss*gauss_sd)){
+					skip_gauss = true;
+					break;
+				}
+
+			}
+			rays.push_back(odomMsg(currAbsX, currAbsY, 0));
+			// cout << "z_true is " << z_true << endl;
+		}
 	}
 };
