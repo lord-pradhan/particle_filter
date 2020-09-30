@@ -73,6 +73,8 @@ public:
 		delta_trans = sqrt((x_bar_p - x_bar)*(x_bar_p - x_bar) + (y_bar_p - y_bar)*(y_bar_p - y_bar));
 		delta_rot2 = theta_bar_p - theta_bar - delta_rot1;
 
+		// cout << delta_trans << endl;
+
 		delta_rot1_hat = delta_rot1 - normaldist(0.0,alpha1*abs(delta_rot1) + alpha2*abs(delta_trans));
 		delta_trans_hat = delta_trans - normaldist(0.0,alpha3*abs(delta_trans) + alpha4*abs(delta_rot1 + delta_rot2));
 		delta_rot2_hat = delta_rot2 - normaldist(0.0,alpha1*abs(delta_rot2) + alpha2*abs(delta_trans));
@@ -80,6 +82,10 @@ public:
 		x_p = x + delta_trans_hat*cos(theta+delta_rot1_hat);
 		y_p = y + delta_trans_hat*sin(theta+delta_rot1_hat);
 		theta_p = theta + delta_rot1_hat + delta_rot2_hat;
+
+		// cout << x << " " << x_p << endl;
+		// cout << y << " " << y_p << endl;
+		// cout << endl;
 
 		odomMsg x_t(x_p, y_p, theta_p);
 
