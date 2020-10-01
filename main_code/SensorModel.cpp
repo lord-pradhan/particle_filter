@@ -19,7 +19,7 @@ public:
 		truncate_gauss = 2.0;
 
 		resolution = map_obj.get_map_resolution();
-		occupancyMap = map_obj.get_map();
+		occupancyMap = transformoccupancymap(map_obj.get_map());
 	}
 
 	double calcCDF(double x){
@@ -54,7 +54,7 @@ public:
 
 		// initialize stuff for prob distributions		
 		double log_p_tot=0.0;
-		double p_tot = 1;
+		double p_tot = 1.0;
 
 		// iterate through num of lasers
 		int numLasers = z_t1_arr.size();		
@@ -208,7 +208,6 @@ public:
 				z_true = t; 
 
 				if(z_true > (max_range + truncate_gauss*gauss_sd)){
-					skip_gauss = true;
 					break;
 				}
 

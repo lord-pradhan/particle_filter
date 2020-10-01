@@ -49,9 +49,9 @@ public:
 	}
 };
 
-vector<vector<double>> transformoccupancymap(vector<vector<double>> &map)
+vector<vector<int>> transformoccupancymap(const vector<vector<int>>& map)
 {
-	vector<vector<double>> transformedmap(map.size(), vector<double>(map[0].size(), -1));	
+	vector<vector<int>> transformedmap(map.size(), vector<int>(map[0].size(), -1));	
 	for(int i = 0; i < map.size(); i++)
 		for(int j = 0; j < map[0].size(); j++)
 			transformedmap[i][j] = map[map.size()-1-i][j];

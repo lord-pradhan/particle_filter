@@ -128,7 +128,7 @@ void test_sensor_model(MapReader &map_obj)
 {
 	SensorModel sm(map_obj);
 	vector<odomMsg> rays;
-	odomMsg xt(4000,4000,0);
+	odomMsg xt(4000,7000,-1.5708);
 	sm.raycasting(rays,xt);
 
 	const char* source_window = "Display Map";
@@ -172,7 +172,7 @@ int main()
 	if(motionmodel_test)
 		test_motion_model(map_obj);
 
-	bool sensormodel_test = false;
+	bool sensormodel_test = true;
 
 	if(sensormodel_test)
 		test_sensor_model(map_obj);
@@ -214,7 +214,7 @@ int main()
 
 		odomMsg odometry_robot(meas_vals[0], meas_vals[1], meas_vals[2]);
 
-		cout << odometry_robot.x << " " << odometry_robot.y << " " << odometry_robot.theta << endl;
+		// cout << odometry_robot.x << " " << odometry_robot.y << " " << odometry_robot.theta << endl;
 
 		double time_stamp = meas_vals.back();
 
@@ -257,6 +257,7 @@ int main()
 				// cout << "num lasers: " << z_t_short.size() << endl;
 				double w_t = sensor.beam_range_finder_model(z_t_short, x_t1);
 
+				cout<<"wt after sensor model is "<<w_t<<endl;
 				X_bar_new[i] = wtOdomMsg(x_t1, w_t);				
 			}
 			else{

@@ -21,7 +21,7 @@ public:
 		double r = static_cast <double> (rand()) / (static_cast <double> (RAND_MAX/M_inv));
 		// cout << "r val: " << r << endl;
 		double c = X_t[0].wt;
-		cout << "c val: " << c << endl;
+		// cout << "c val: " << c << endl;
 		int i = 0;
 
 		for(int m = 0; m < M; m++)
