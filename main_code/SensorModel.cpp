@@ -147,7 +147,9 @@ public:
 				p_rand=0.0;
 
 			double wt_norm = wt_gauss + wt_short + wt_max + wt_rand;
-			p_tot *= wt_norm;
+			p_tot *= wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + wt_max/wt_norm*p_max + 
+					wt_rand/wt_norm*p_rand;
+					
 			log_p_tot +=  log(wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + 
 						wt_max/wt_norm*p_max + wt_rand/wt_norm*p_rand);
 			// cout<< "iterated probability is "<<(wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + wt_max/wt_norm*p_max + wt_rand/wt_norm*p_rand) << endl;

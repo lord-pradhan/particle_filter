@@ -128,18 +128,18 @@ void test_sensor_model(MapReader &map_obj)
 {
 	SensorModel sm(map_obj);
 	vector<odomMsg> rays;
-	odomMsg xt(4000,7000,-1.5708);
+	odomMsg xt(4000,4000,-1.5708);
 	sm.raycasting(rays,xt);
 
 	const char* source_window = "Display Map";
 	Mat imgwithrays;
 	imgwithrays = map_obj.get_img().clone();
 	double xt1 = xt.x/map_obj.get_map_resolution();
-	double yt1 = xt.y/map_obj.get_map_resolution();
+	double yt1 = map_obj.get_map_size_y() - xt.y/map_obj.get_map_resolution();
 	for(odomMsg ray : rays)
 	{
 		double x = ray.x/map_obj.get_map_resolution();
-		double y = ray.y/map_obj.get_map_resolution();
+		double y = map_obj.get_map_size_y() - ray.y/map_obj.get_map_resolution();
 		line(imgwithrays, Point2f(x,y), Point2f(xt1,yt1), Scalar(0,255,0), 1);
 	}
 	circle(imgwithrays, Point(xt1,yt1), 2, Scalar(0,0,255), FILLED);

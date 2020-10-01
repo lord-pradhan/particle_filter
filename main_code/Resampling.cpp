@@ -33,6 +33,7 @@ public:
 				i = i + 1;
 				c = c + X_t[i].wt;
 			}
+			
 			X_t_bar.push_back(X_t[i]);
 		}
 		return X_t_bar;
