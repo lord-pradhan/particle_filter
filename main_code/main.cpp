@@ -240,6 +240,9 @@ int main()
 		vector<wtOdomMsg> X_bar_new = X_bar;
 		auto u_t1 = odometry_robot;
 
+		if(vis_flag)
+			visualize_map_with_particles(map_obj, X_bar);
+
 		for(int i=0; i<num_particles; i++)
 		{
 			// Motion model
@@ -257,7 +260,7 @@ int main()
 				// cout << "num lasers: " << z_t_short.size() << endl;
 				double w_t = sensor.beam_range_finder_model(z_t_short, x_t1);
 
-				cout<<"wt after sensor model is "<<w_t<<endl;
+				// cout<<"wt after sensor model is "<<w_t<<endl;
 				X_bar_new[i] = wtOdomMsg(x_t1, w_t);				
 			}
 			else{
@@ -271,6 +274,8 @@ int main()
 
 		// Resampling
 		X_bar = resampler.low_variance_sampler(X_bar);
+
+		cout<< "After resampling at time step "<< time_step << endl;
 
 		if(vis_flag)
 			visualize_map_with_particles(map_obj, X_bar);
