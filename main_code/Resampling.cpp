@@ -12,15 +12,15 @@ public:
 		return X_t_bar;
 	}
 
-	vector< wtOdomMsg > low_variance_sampler(vector< wtOdomMsg > &X_t)
+	vector< wtOdomMsg > low_variance_sampler(vector< wtOdomMsg > &X_t, long double sumWts, double minWt)
 	{	
 		vector< wtOdomMsg > X_t_bar;
 		int M = X_t.size();
-		double M_inv = (1/(double)M);
+		double M_inv = (1.0/(double)M);
 		
 		double r = static_cast <double> (rand()) / (static_cast <double> (RAND_MAX/M_inv));
 		// cout << "r val: " << r << endl;
-		double c = X_t[0].wt;
+		double c = (X_t[0].wt - minWt)/sumWts;
 		// cout << "c val: " << c << endl;
 		int i = 0;
 
@@ -31,10 +31,11 @@ public:
 			{
 				// cout << "comes" << endl;
 				i = i + 1;
-				c = c + X_t[i].wt;
+				c += (X_t[i].wt - minWt)/sumWts;
 			}
 			
 			X_t_bar.push_back(X_t[i]);
+			// cout<<"particle location is "<<X_t[i].x<<", "<<X_t[i].y<<endl;
 		}
 		return X_t_bar;
 	}

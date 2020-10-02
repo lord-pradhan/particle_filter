@@ -158,7 +158,7 @@ int main()
 	MapReader map_obj = MapReader(path_map);
 	vector<vector<int>> occupancy_map = map_obj.get_map();
 
-	int num_particles = 200;
+	int num_particles = 2000;
 	// vector<wtOdomMsg> particles = init_particles_random(num_particles, map_obj);
 	vector<wtOdomMsg> X_bar_init = init_particles_freespace(num_particles, map_obj);
 
@@ -242,7 +242,8 @@ int main()
 
 		if(vis_flag)
 			visualize_map_with_particles(map_obj, X_bar);
-
+		
+		double minWt = 0.;
 		for(int i=0; i<num_particles; i++)
 		{
 			// Motion model
@@ -258,7 +259,8 @@ int main()
 				for(int k=0; k<sizeLas; k++)
 					z_t_short.push_back(ranges[k]);
 				// cout << "num lasers: " << z_t_short.size() << endl;
-				double w_t = sensor.beam_range_finder_model(z_t_short, x_t1);
+				double w_t = sensor.beam_range_finder_model(z_t_short, x_t1);				
+				minWt = min(w_t, minWt);
 
 				// cout<<"wt after sensor model is "<<w_t<<endl;
 				X_bar_new[i] = wtOdomMsg(x_t1, w_t);				
@@ -269,11 +271,16 @@ int main()
 			}			
 		}
 
+		// calc normalization of wts
+		long double sumWts=0.;
+		for(int i=0; i<num_particles; i++)
+			sumWts += X_bar_new[i].wt - minWt;
+
 		X_bar = X_bar_new;
 		u_t0 = u_t1;
 
 		// Resampling
-		X_bar = resampler.low_variance_sampler(X_bar);
+		X_bar = resampler.low_variance_sampler(X_bar, sumWts, minWt);
 
 		cout<< "After resampling at time step "<< time_step << endl;
 

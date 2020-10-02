@@ -14,8 +14,8 @@ private:
 public:
 	SensorModel(const MapReader& map_objIn): map_obj(map_objIn){
 		max_range = 8183; laserOffset = 25.0;
-		gauss_sd = 20.0; lambda_short = 0.001;
-		wt_gauss=3.0; wt_short=5.0; wt_max=0.03; wt_rand=0.5;
+		gauss_sd = 40.0; lambda_short = 0.001;
+		wt_gauss=6.0; wt_short=1.0; wt_max=0.03; wt_rand=0.5;
 		truncate_gauss = 2.0;
 
 		resolution = map_obj.get_map_resolution();
@@ -121,8 +121,8 @@ public:
 
 				double norm_gauss = 1.0/( calcCDF(ulim) - calcCDF(llim) );				
 
-				p_gauss = norm_gauss * exp( -(z_meas - z_true)*(z_meas - z_true)/(2.0*gauss_sd*gauss_sd) ) 
-							/ (gauss_sd*sqrt(2.0*PI));
+				p_gauss = max(norm_gauss * exp( -(z_meas - z_true)*(z_meas - z_true)/(2.0*gauss_sd*gauss_sd) ) 
+							/ (gauss_sd*sqrt(2.0*PI)) , 1e-12) ;
 				// cout<<"norm_gauss is "<< norm_gauss<<" p_gauss is "<<p_gauss<<endl;
 			}
 
@@ -133,29 +133,34 @@ public:
 			}
 			else
 				p_short = 0.0;
+			// cout<<"p_short is "<<p_short<<endl;
 
 			// max distribution
 			if(fabs(z_meas - (double)max_range)<1e-3)
 				p_max = 1.0;
 			else
 				p_max=0.0;
+			// cout<<"p_max is "<<p_max<<endl;
 
 			// random distribution
 			if(z_meas>=0.0 && z_meas<= (double) max_range)
-				p_rand = (double) 1.0/max_range;
+				p_rand = 1./(double)max_range;
 			else
 				p_rand=0.0;
+			// cout<<"p_rand is "<<p_rand<<endl;
 
 			double wt_norm = wt_gauss + wt_short + wt_max + wt_rand;
-			p_tot *= wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + wt_max/wt_norm*p_max + 
-					wt_rand/wt_norm*p_rand;
-					
+			p_tot *= (wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + wt_max/wt_norm*p_max + 
+					wt_rand/wt_norm*p_rand);
+			// cout << "p_tot interm is "<<p_tot<<endl;
+
 			log_p_tot +=  log(wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + 
 						wt_max/wt_norm*p_max + wt_rand/wt_norm*p_rand);
 			// cout<< "iterated probability is "<<(wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + wt_max/wt_norm*p_max + wt_rand/wt_norm*p_rand) << endl;
 		}
 		
 		// cout<<"returned log probability is "<< log_p_tot<<endl;
+		// cout<<"returned probability is "<< p_tot<<endl;
 		return log_p_tot;	
 	}
 

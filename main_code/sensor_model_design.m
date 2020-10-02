@@ -3,8 +3,8 @@ clear
 close all
 
 %% params
-max_range = 8183; gauss_sd = 20.0; lambda_short = 0.001;
-wt_gauss=3.0; wt_short=5.0; wt_max=0.03; wt_rand=0.5;
+max_range = 8183; gauss_sd = 40.0; lambda_short = 0.001;
+wt_gauss=6.0; wt_short=1.0; wt_max=0.03; wt_rand=0.5;
 
 z_true = 5000;
 %% prob distribution
@@ -42,7 +42,7 @@ for i_meas = z_meas
 
     % random distribution
     if (i_meas >=0.0) && i_meas <= max_range
-        p_rand = 1.0/max_range;
+        p_rand = 1.0/max_range ;
     else
         p_rand=0.0;
     end
@@ -52,4 +52,7 @@ for i_meas = z_meas
     ct = ct+1;
 end
 
+figure(1)
 plot(z_meas, p_vect)
+figure(2)
+plot(z_meas, log(p_vect))
