@@ -76,7 +76,7 @@ public:
 		// cout << delta_trans << endl;
 
 		delta_rot1_hat = delta_rot1 - normaldist(0.0,sqrt(alpha1*pow(delta_rot1,2) + alpha2*pow(delta_trans,2)));
-		delta_trans_hat = delta_trans - normaldist(0.0,sqrt(alpha3*pow(delta_trans,2) + alpha4*pow(delta_rot1 + delta_rot2,2)));
+		delta_trans_hat = delta_trans - normaldist(0.0,sqrt(alpha3*pow(delta_trans,2) + alpha4*pow(delta_rot1,2) + alpha4*pow(delta_rot2,2)));
 		delta_rot2_hat = delta_rot2 - normaldist(0.0,sqrt(alpha1*pow(delta_rot2,2) + alpha2*pow(delta_trans,2)));
 
 		x_p = x + delta_trans_hat*cos(theta+delta_rot1_hat);
