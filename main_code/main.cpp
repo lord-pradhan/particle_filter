@@ -181,7 +181,7 @@ int main()
 	std::string logfile;
 	std::ifstream infile(path_log);
 
-	MotionModel motion(0.001,0.001,0.06,0.001);
+	MotionModel motion(0.00001,0.00001,0.006,0.00001);
 	SensorModel sensor(map_obj);
 	Resampling resampler;
 
