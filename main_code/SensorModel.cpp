@@ -14,9 +14,9 @@ private:
 public:
 	SensorModel(const MapReader& map_objIn): map_obj(map_objIn){
 		max_range = 8183; laserOffset = 25.0;
-		gauss_sd = 40.0; lambda_short = 0.001;
-		wt_gauss=6.0; wt_short=1.0; wt_max=0.03; wt_rand=0.5;
-		truncate_gauss = 2.0;
+		gauss_sd = 20.0; lambda_short = 0.05;
+		wt_gauss=10.0; wt_short=0.01; wt_max=0.001; wt_rand=0.1;
+		truncate_gauss = 3.0;
 
 		resolution = map_obj.get_map_resolution();
 		occupancyMap = transformoccupancymap(map_obj.get_map());
@@ -136,7 +136,7 @@ public:
 			// cout<<"p_short is "<<p_short<<endl;
 
 			// max distribution
-			if(fabs(z_meas - (double)max_range)<1e-3)
+			if(fabs(z_meas - (double)max_range) < 2.0)
 				p_max = 1.0;
 			else
 				p_max=0.0;

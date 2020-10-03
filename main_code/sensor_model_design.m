@@ -3,10 +3,10 @@ clear
 close all
 
 %% params
-max_range = 8183; gauss_sd = 40.0; lambda_short = 0.001;
-wt_gauss=6.0; wt_short=1.0; wt_max=0.03; wt_rand=0.5;
+max_range = 8183; gauss_sd = 20.0; lambda_short = 0.05;
+wt_gauss=10.0; wt_short=0.01; wt_max=0.001; wt_rand=0.1;
 
-z_true = 5000;
+z_true = 6000;
 %% prob distribution
 z_meas = linspace(0, max_range, 10000);
 p_vect = zeros(size(z_meas));
@@ -34,7 +34,7 @@ for i_meas = z_meas
     end
 
     % max distribution
-    if abs(i_meas - max_range)<1e-3
+    if abs(i_meas - max_range)<2
         p_max = 1.0;
     else
         p_max=0.0;

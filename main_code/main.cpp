@@ -128,7 +128,7 @@ void test_sensor_model(MapReader &map_obj)
 {
 	SensorModel sm(map_obj);
 	vector<odomMsg> rays;
-	odomMsg xt(4000,4500,0);
+	odomMsg xt(4000,5000,1.0);
 	sm.raycasting(rays,xt);
 
 	const char* source_window = "Display Map";
@@ -158,7 +158,7 @@ int main()
 	MapReader map_obj = MapReader(path_map);
 	vector<vector<int>> occupancy_map = map_obj.get_map();
 
-	int num_particles = 2000;
+	int num_particles = 4000;
 	// vector<wtOdomMsg> particles = init_particles_random(num_particles, map_obj);
 	vector<wtOdomMsg> X_bar_init = init_particles_freespace(num_particles, map_obj);
 
@@ -256,7 +256,7 @@ int main()
 				int sizeLas = ranges.size();
 
 				vector<int> z_t_short;
-				for(int k=0; k<sizeLas; k++)
+				for(int k=0; k<sizeLas; k+=4)
 					z_t_short.push_back(ranges[k]);
 				// cout << "num lasers: " << z_t_short.size() << endl;
 				double w_t = sensor.beam_range_finder_model(z_t_short, x_t1);				
@@ -282,10 +282,10 @@ int main()
 		// Resampling
 		X_bar = resampler.low_variance_sampler(X_bar, sumWts, minWt);
 
-		cout<< "After resampling at time step "<< time_step << endl;
+		// cout<< "After resampling at time step "<< time_step << endl;
 
-		if(vis_flag)
-			visualize_map_with_particles(map_obj, X_bar);
+		// if(vis_flag)
+		// 	visualize_map_with_particles(map_obj, X_bar);
 	}
 
 	return 0;
