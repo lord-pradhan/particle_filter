@@ -103,14 +103,14 @@ vector<wtOdomMsg> init_particles_freespace(int num_particles, MapReader &map_obj
 
 void test_motion_model(MapReader &map_obj)
 {
-	MotionModel mm(0.001,0.001,0.06,0.001); 
+	MotionModel mm(0.000001,0.000001,0.01,0.000001); 
 	vector<wtOdomMsg> particles;
 	int numparticles = 1000;
 	for(int i = 0; i < numparticles; i++)
 		particles.push_back(wtOdomMsg(4000,4000,0,0));
 	visualize_map_with_particles(map_obj, particles);
 	odomMsg ut0(0,0,0);
-	odomMsg ut1(100,100,0);
+	odomMsg ut1(100,0,0);
 
 	int numoftimesteps = 10;
 	for(int t = 0; t < numoftimesteps; t++)
@@ -128,7 +128,7 @@ void test_sensor_model(MapReader &map_obj)
 {
 	SensorModel sm(map_obj);
 	vector<odomMsg> rays;
-	odomMsg xt(4000,4000,-1.5708);
+	odomMsg xt(4000,4500,0);
 	sm.raycasting(rays,xt);
 
 	const char* source_window = "Display Map";
@@ -167,7 +167,7 @@ int main()
 	if(visualize_initial)
 		visualize_map_with_particles(map_obj, X_bar_init);
 
-	bool motionmodel_test = false;
+	bool motionmodel_test = true;
 
 	if(motionmodel_test)
 		test_motion_model(map_obj);
@@ -181,7 +181,7 @@ int main()
 	std::string logfile;
 	std::ifstream infile(path_log);
 
-	MotionModel motion(0.001,0.001,0.06,0.001);
+	MotionModel motion(0.00001,0.005,0.005,0.00001);
 	SensorModel sensor(map_obj);
 	Resampling resampler;
 
