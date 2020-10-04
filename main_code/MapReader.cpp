@@ -39,7 +39,7 @@ public:
 		for(int i = 0; i < map->prob.size(); i++)
 			for(int j = 0; j < map->prob[0].size(); j++)
 			{
-				if (map->prob[i][j] < 0 || map->prob[i][j] > 0.5)
+				if (map->prob[i][j] < 0 || map->prob[i][j] > 0.2)
 					occupancy_map[i][j] = 1;
 				else
 					occupancy_map[i][j] = 0;
