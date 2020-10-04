@@ -8,7 +8,9 @@ private:
 
 	// params
 	int max_range;
-	double laserOffset, gauss_sd, lambda_short;
+	double laserOffset;
+	// tunable params
+	double gauss_sd, lambda_short;
 	double wt_gauss, wt_short, wt_max, wt_rand, truncate_gauss;
 
 public:
@@ -216,7 +218,6 @@ public:
 
 				t += dt;
 				currAbsX = startAbsX + t*dirX; currAbsY = startAbsY + t*dirY;
-				// cout<<"t is "<<t<<", currAbsX is "<<currAbsX<<", currAbsY is "<<currAbsY<<endl;
 				z_true = t; 
 
 				if(z_true > (max_range + truncate_gauss*gauss_sd)){
@@ -225,7 +226,6 @@ public:
 
 			}
 			rays.push_back(odomMsg(currAbsX, currAbsY, 0));
-			// cout << "z_true is " << z_true << endl;
 		}
 	}
 };

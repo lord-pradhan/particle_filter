@@ -103,7 +103,7 @@ vector<wtOdomMsg> init_particles_freespace(int num_particles, MapReader &map_obj
 
 void test_motion_model(MapReader &map_obj)
 {
-	MotionModel mm(0.000001,0.000001,0.01,0.000001); 
+	MotionModel mm(0.0001,0.0001,0.01,0.01); 
 	vector<wtOdomMsg> particles;
 	int numparticles = 1000;
 	for(int i = 0; i < numparticles; i++)
@@ -158,7 +158,7 @@ int main()
 	MapReader map_obj = MapReader(path_map);
 	vector<vector<int>> occupancy_map = map_obj.get_map();
 
-	int num_particles = 2000;
+	int num_particles = 5000;
 	// vector<wtOdomMsg> particles = init_particles_random(num_particles, map_obj);
 	vector<wtOdomMsg> X_bar_init = init_particles_freespace(num_particles, map_obj);
 
@@ -181,7 +181,7 @@ int main()
 	std::string logfile;
 	std::ifstream infile(path_log);
 
-	MotionModel motion(0.0001,0.0001,0.005,0.0001);
+	MotionModel motion(0.0001,0.0001,0.01,0.01);
 	SensorModel sensor(map_obj);
 	Resampling resampler;
 
@@ -243,7 +243,7 @@ int main()
 		if(vis_flag)
 			visualize_map_with_particles(map_obj, X_bar);
 		
-		double minWt = 0.;
+		double minWt = 10000000.0;
 		for(int i=0; i<num_particles; i++)
 		{
 			// Motion model
@@ -265,10 +265,10 @@ int main()
 				// cout<<"wt after sensor model is "<<w_t<<endl;
 				X_bar_new[i] = wtOdomMsg(x_t1, w_t);				
 			}
-			// else{
-			// 	// cout<<"entered imu sensor model"<<endl;
-			// 	X_bar_new[i] = wtOdomMsg(x_t1, X_bar[i].wt);
-			// }			
+			else{
+				// cout<<"entered imu sensor model"<<endl;
+				X_bar_new[i] = wtOdomMsg(x_t1, X_bar[i].wt);
+			}			
 		}
 
 		// calc normalization of wts

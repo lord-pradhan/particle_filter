@@ -26,7 +26,7 @@ public:
 
 		for(int m = 0; m < M; m++)
 		{
-			double u = r + (m - 1)*M_inv;
+			double u = r + (m)*M_inv;
 			while (u > c)
 			{
 				// cout << "comes" << endl;
