@@ -16,7 +16,7 @@ private:
 public:
 	SensorModel(const MapReader& map_objIn): map_obj(map_objIn){
 		max_range = 8183; laserOffset = 25.0;
-		gauss_sd = 30.0; lambda_short = 0.05;
+		gauss_sd = 30.0; lambda_short = 0.05; // make it 300, kl div, 
 		wt_gauss=8.0; wt_short=0.001; wt_max=0.001; wt_rand=0.00001;
 		truncate_gauss = 3.0;
 

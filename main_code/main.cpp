@@ -183,12 +183,12 @@ int main()
 	if(visualize_initial)
 		visualize_map_with_particles(map_obj, X_bar_init);
 
-	bool motionmodel_test = true;
+	bool motionmodel_test = false;
 
 	if(motionmodel_test)
 		test_motion_model(map_obj);
 
-	bool sensormodel_test = true;
+	bool sensormodel_test = false;
 
 	if(sensormodel_test)
 		test_sensor_model(map_obj);
@@ -201,7 +201,7 @@ int main()
 	SensorModel sensor(map_obj);
 	Resampling resampler;
 
-	bool vis_flag = true;
+	bool vis_flag = false;
 	bool save_episode = false;
 
 	bool first_time_idx = true;
@@ -275,7 +275,7 @@ int main()
 				int sizeLas = ranges.size();
 
 				vector<int> z_t_short;
-				for(int k=0; k<sizeLas; k+=5)
+				for(int k=0; k<sizeLas; k+=1)
 					z_t_short.push_back(ranges[k]);
 				// cout << "num lasers: " << z_t_short.size() << endl;
 				double w_t = sensor.beam_range_finder_model(z_t_short, x_t1);				
