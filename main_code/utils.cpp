@@ -13,7 +13,7 @@ bool inRangeMap(int tileX, int tileY, const vector<vector<int>>& mapIn){
 	bool returnVal = true;
 	int Ymax = mapIn.size(), Xmax = mapIn[0].size();
 	
-	if(tileX<0 || tileX>Xmax || tileY<0 || tileY>Ymax) returnVal = false;
+	if(tileX<=0 || tileX>=Xmax || tileY<=0 || tileY>=Ymax) returnVal = false;
 
 	return returnVal;
 }
