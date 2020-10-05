@@ -119,7 +119,7 @@ vector<wtOdomMsg> init_particles_freespace(int num_particles, MapReader &map_obj
 
 void test_motion_model(MapReader &map_obj)
 {
-	MotionModel mm(0.0001,0.0001,0.01,0.01); 
+	MotionModel mm(0.00001,0.00001,0.01,0.01); 
 	vector<wtOdomMsg> particles;
 	int numparticles = 1000;
 	for(int i = 0; i < numparticles; i++)
@@ -169,7 +169,7 @@ int main()
 {
 
 	const char* path_map = "data/map/wean.dat";
-	const char* path_log = "data/log/robotdata1.log";
+	const char* path_log = "data/log/robotdata4.log";
 
 	MapReader map_obj = MapReader(path_map);
 	vector<vector<int>> occupancy_map = map_obj.get_map();
@@ -197,7 +197,8 @@ int main()
 	std::string logfile;
 	std::ifstream infile(path_log);
 
-	MotionModel motion(0.0001,0.0001,0.01,0.01);
+	MotionModel motion(0.0001,0.0001,0.001,0.001);
+	// MotionModel motion(0.00001,0.00001,0.05,0.05);
 	SensorModel sensor(map_obj);
 	Resampling resampler;
 
@@ -261,8 +262,7 @@ int main()
 			visualize_map_with_particles(map_obj, X_bar);
 		if(save_episode)
 			save_img(map_obj, X_bar, time_step);
-		
-		double minWt = 10000000.0;
+				
 		for(int i=0; i<num_particles; i++)
 		{
 			// Motion model
@@ -278,8 +278,7 @@ int main()
 				for(int k=0; k<sizeLas; k+=5)
 					z_t_short.push_back(ranges[k]);
 				// cout << "num lasers: " << z_t_short.size() << endl;
-				double w_t = sensor.beam_range_finder_model(z_t_short, x_t1);				
-				minWt = min(w_t, minWt);
+				double w_t = sensor.beam_range_finder_model(z_t_short, x_t1);								
 
 				// cout<<"wt after sensor model is "<<w_t<<endl;
 				X_bar_new[i] = wtOdomMsg(x_t1, w_t);			
@@ -291,17 +290,23 @@ int main()
 		}
 
 		// calc normalization of wts
+		double minWt = 0.0;
+		for(int i=0; i<num_particles; i++)
+			minWt = min(X_bar_new[i].wt, minWt);
+
 		long double sumWts=0.;
 		for(int i=0; i<num_particles; i++)
 			sumWts += X_bar_new[i].wt - minWt;
 
+		// cout<<"sum of wts is "<<sumWts<<endl;
 		X_bar = X_bar_new;
 		u_t0 = u_t1;
 
 		// Resampling
-		X_bar = resampler.low_variance_sampler(X_bar, sumWts, minWt);
+		if(meas_type=='L')
+			X_bar = resampler.low_variance_sampler(X_bar, sumWts, minWt);
 
 	}
-
+	cout<<"returning"<<endl;
 	return 0;
 }

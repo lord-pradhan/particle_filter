@@ -15,9 +15,9 @@ private:
 
 public:
 	SensorModel(const MapReader& map_objIn): map_obj(map_objIn){
-		max_range = 8183; laserOffset = 25.0;
-		gauss_sd = 30.0; lambda_short = 0.05;
-		wt_gauss=8.0; wt_short=0.001; wt_max=0.001; wt_rand=0.00001;
+		max_range = 8200; laserOffset = 25.0;
+		gauss_sd = 190.0; lambda_short = 0.07;
+		wt_gauss=8.0; wt_short=0.5; wt_max=0.001; wt_rand=0.00001;
 		truncate_gauss = 3.0;
 
 		resolution = map_obj.get_map_resolution();
@@ -63,7 +63,7 @@ public:
 		// cout<<"before entering loop for lasers in SensorModel. Num lasers is "<<numLasers<<endl;
 		for(int i_las=0; i_las<numLasers; i_las++){
 
-			double z_meas = z_t1_arr[i_las];	
+			double z_meas = (double) z_t1_arr[i_las];	
 			// cout<<"z measured is "<<z_meas<<endl;		
 
 			/* Raycasting operation */
@@ -73,7 +73,8 @@ public:
 			double signDirY = dirY>0 ? 1 : -1;
 			// cout<<"signDirX is "<<signDirX<<", signDirY is "<<signDirY<<", dirX is "<<dirX<<", dirY is "<<dirY<<endl;
 
-			double t=0.0, z_true = 0.0; bool collided = false, skip_gauss = false;
+			double t=0.0, z_true = 0.0; 
+			bool collided = false;
 			int tileX, tileY;
 			double currAbsX = startAbsX, currAbsY = startAbsY;
 			absToTile(tileX, tileY, currAbsX, currAbsY, resolution);
@@ -102,8 +103,7 @@ public:
 				// cout<<"t is "<<t<<", currAbsX is "<<currAbsX<<", currAbsY is "<<currAbsY<<endl;
 				z_true = t; 
 
-				if(z_true > (max_range + truncate_gauss*gauss_sd)){
-					skip_gauss = true;
+				if(z_true >= max_range ){
 					break;
 				}
 
@@ -113,7 +113,7 @@ public:
 			double p_gauss, p_short, p_max, p_rand;
 
 			// Gaussian distribution
-			if(skip_gauss || z_meas > (double) max_range || z_meas<=0.0)
+			if(z_meas > (double) max_range || z_meas<=0.0)
 				p_gauss=0.0;
 			else{
 				// calc normalizer
@@ -152,16 +152,21 @@ public:
 			// cout<<"p_rand is "<<p_rand<<endl;			
 
 			double wt_norm = wt_gauss + wt_short + wt_max + wt_rand;
-			p_tot *= (wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + wt_max/wt_norm*p_max + 
+
+			double p_tot_temp = (wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + wt_max/wt_norm*p_max + 
 					wt_rand/wt_norm*p_rand);
-			// cout << "p_tot interm is "<<p_tot<<endl;
 
-			log_p_tot +=  log(wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + 
-						wt_max/wt_norm*p_max + wt_rand/wt_norm*p_rand);
-
-			double log_p_temp = log(wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + 
-						wt_max/wt_norm*p_max + wt_rand/wt_norm*p_rand);
-
+			if(fabs(p_tot_temp - 0.0) < 1e-15){
+				cout<<"zero prob encountered"<<endl;
+				cout<<"z_meas is "<<z_meas<<", z_true is "<<z_true<<endl;
+			} 			
+			else{
+				p_tot *= p_tot_temp;
+				double log_p_temp = log(p_tot_temp);
+				log_p_tot +=  log_p_temp;
+			}
+			
+			// cout << "p_tot interm is "<<p_tot<<endl;			
 			// cout<<"z_true is "<<z_true<<", z_meas is "<<z_meas<< ", p_gauss is "<<p_gauss<<", p_short is "<<p_short<<", p_max is "<<p_max<<", p_rand is "<<p_rand<< ", log_p_temp is "<<log_p_temp<<endl;
 			// cout<< "iterated probability is "<<(wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + wt_max/wt_norm*p_max + wt_rand/wt_norm*p_rand) << endl;
 		}
