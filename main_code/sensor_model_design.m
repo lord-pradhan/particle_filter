@@ -3,10 +3,10 @@ clear
 close all
 
 %% params
-max_range = 8183; gauss_sd = 30.0; lambda_short = 0.05;
-wt_gauss=8.0; wt_short=0.001; wt_max=0.001; wt_rand=0.00001;
+max_range = 8183; gauss_sd = 150.0; lambda_short = 0.07;
+wt_gauss=8.0; wt_short=0.5; wt_max=0.001; wt_rand=0.00001;
 
-z_true = 3000;
+z_true = 2000;
 %% prob distribution
 z_meas = linspace(0, max_range, 10000);
 p_vect = zeros(size(z_meas));
