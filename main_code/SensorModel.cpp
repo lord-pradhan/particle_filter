@@ -16,8 +16,8 @@ private:
 public:
 	SensorModel(const MapReader& map_objIn): map_obj(map_objIn){
 		max_range = 8183; laserOffset = 25.0;
-		gauss_sd = 30.0; lambda_short = 0.05; // make it 300, kl div, 
-		wt_gauss=8.0; wt_short=0.001; wt_max=0.001; wt_rand=0.00001;
+		gauss_sd = 190.0; lambda_short = 0.07;
+		wt_gauss=8.0; wt_short=0.5; wt_max=0.001; wt_rand=0.00001;
 		truncate_gauss = 3.0;
 
 		resolution = map_obj.get_map_resolution();
@@ -63,7 +63,7 @@ public:
 		// cout<<"before entering loop for lasers in SensorModel. Num lasers is "<<numLasers<<endl;
 		for(int i_las=0; i_las<numLasers; i_las++){
 
-			double z_meas = z_t1_arr[i_las];	
+			double z_meas = (double) z_t1_arr[i_las];	
 			// cout<<"z measured is "<<z_meas<<endl;		
 
 			/* Raycasting operation */
@@ -130,7 +130,7 @@ public:
 
 			// exp distribution
 			double norm_exp = 1.0 / (1.0 - exp(-lambda_short*z_true));
-			if(z_meas <= z_true && z_meas>=0.0){
+			if(z_meas <= z_true && z_meas>=1.0){
 				p_short = norm_exp*lambda_short*exp(-lambda_short*z_meas);
 			}
 			else

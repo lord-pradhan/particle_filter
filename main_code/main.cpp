@@ -119,7 +119,7 @@ vector<wtOdomMsg> init_particles_freespace(int num_particles, MapReader &map_obj
 
 void test_motion_model(MapReader &map_obj)
 {
-	MotionModel mm(0.0001,0.0001,0.01,0.01); 
+	MotionModel mm(0.00001,0.00001,0.01,0.01); 
 	vector<wtOdomMsg> particles;
 	int numparticles = 1000;
 	for(int i = 0; i < numparticles; i++)
@@ -197,7 +197,8 @@ int main()
 	std::string logfile;
 	std::ifstream infile(path_log);
 
-	MotionModel motion(0.0001,0.0001,0.01,0.01);
+	MotionModel motion(0.0001,0.0001,0.001,0.001);
+	// MotionModel motion(0.00001,0.00001,0.05,0.05);
 	SensorModel sensor(map_obj);
 	Resampling resampler;
 
