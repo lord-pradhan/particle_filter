@@ -8,14 +8,16 @@ private:
 
 	// params
 	int max_range;
-	double laserOffset, gauss_sd, lambda_short;
+	double laserOffset;
+	// tunable params
+	double gauss_sd, lambda_short;
 	double wt_gauss, wt_short, wt_max, wt_rand, truncate_gauss;
 
 public:
 	SensorModel(const MapReader& map_objIn): map_obj(map_objIn){
 		max_range = 8183; laserOffset = 25.0;
-		gauss_sd = 20.0; lambda_short = 0.05;
-		wt_gauss=10.0; wt_short=0.01; wt_max=0.001; wt_rand=0.1;
+		gauss_sd = 30.0; lambda_short = 0.05;
+		wt_gauss=8.0; wt_short=0.001; wt_max=0.001; wt_rand=0.00001;
 		truncate_gauss = 3.0;
 
 		resolution = map_obj.get_map_resolution();
@@ -106,7 +108,6 @@ public:
 				}
 
 			}
-			// cout<<"z_true is "<<z_true<<", z_meas is "<<z_meas<<endl;
 
 			/* Calculate probability */
 			double p_gauss, p_short, p_max, p_rand;
@@ -120,9 +121,10 @@ public:
 				double ulim = ((double)max_range - z_true)/gauss_sd;
 
 				double norm_gauss = 1.0/( calcCDF(ulim) - calcCDF(llim) );				
+				// double norm_gauss = 1.0;
 
-				p_gauss = max(norm_gauss * exp( -(z_meas - z_true)*(z_meas - z_true)/(2.0*gauss_sd*gauss_sd) ) 
-							/ (gauss_sd*sqrt(2.0*PI)) , 1e-12) ;
+				p_gauss = norm_gauss * exp( -(z_meas - z_true)*(z_meas - z_true)/(2.0*gauss_sd*gauss_sd) ) 
+							/ (gauss_sd*sqrt(2.0*PI))  ;
 				// cout<<"norm_gauss is "<< norm_gauss<<" p_gauss is "<<p_gauss<<endl;
 			}
 
@@ -147,7 +149,7 @@ public:
 				p_rand = 1./(double)max_range;
 			else
 				p_rand=0.0;
-			// cout<<"p_rand is "<<p_rand<<endl;
+			// cout<<"p_rand is "<<p_rand<<endl;			
 
 			double wt_norm = wt_gauss + wt_short + wt_max + wt_rand;
 			p_tot *= (wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + wt_max/wt_norm*p_max + 
@@ -156,6 +158,11 @@ public:
 
 			log_p_tot +=  log(wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + 
 						wt_max/wt_norm*p_max + wt_rand/wt_norm*p_rand);
+
+			double log_p_temp = log(wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + 
+						wt_max/wt_norm*p_max + wt_rand/wt_norm*p_rand);
+
+			// cout<<"z_true is "<<z_true<<", z_meas is "<<z_meas<< ", p_gauss is "<<p_gauss<<", p_short is "<<p_short<<", p_max is "<<p_max<<", p_rand is "<<p_rand<< ", log_p_temp is "<<log_p_temp<<endl;
 			// cout<< "iterated probability is "<<(wt_gauss/wt_norm*p_gauss + wt_short/wt_norm*p_short + wt_max/wt_norm*p_max + wt_rand/wt_norm*p_rand) << endl;
 		}
 		
@@ -211,7 +218,6 @@ public:
 
 				t += dt;
 				currAbsX = startAbsX + t*dirX; currAbsY = startAbsY + t*dirY;
-				// cout<<"t is "<<t<<", currAbsX is "<<currAbsX<<", currAbsY is "<<currAbsY<<endl;
 				z_true = t; 
 
 				if(z_true > (max_range + truncate_gauss*gauss_sd)){
@@ -220,7 +226,6 @@ public:
 
 			}
 			rays.push_back(odomMsg(currAbsX, currAbsY, 0));
-			// cout << "z_true is " << z_true << endl;
 		}
 	}
 };

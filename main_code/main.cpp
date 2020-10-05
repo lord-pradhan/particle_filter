@@ -41,6 +41,22 @@ void visualize_map_with_particles(MapReader map_obj, vector<wtOdomMsg> &particle
 	// map_obj.visualize_map(imgwithparticles);
 }
 
+void save_img(MapReader map_obj, vector<wtOdomMsg> &particles, int timestep)
+{
+	const char* source_window = "Display Map";
+	Mat imgwithparticles;
+	imgwithparticles = map_obj.get_img().clone();
+	for(wtOdomMsg particle : particles)
+	{
+		double x = particle.x/map_obj.get_map_resolution();
+		double y = map_obj.get_map_size_y() - particle.y/map_obj.get_map_resolution();
+		// imgwithparticles.at<Vec3b>(y,x) = Vec3b(0,0,255);
+		circle(imgwithparticles, Point(x,y), 1, Scalar(0,0,255), FILLED);
+	}
+	string name = string("images/")+to_string(timestep)+string(".jpg");
+	imwrite(name, imgwithparticles);
+}
+
 // void visualize_timestep(X_bar, tstep){}
 
 vector<wtOdomMsg> init_particles_random(int num_particles, MapReader &map_obj){
@@ -103,7 +119,7 @@ vector<wtOdomMsg> init_particles_freespace(int num_particles, MapReader &map_obj
 
 void test_motion_model(MapReader &map_obj)
 {
-	MotionModel mm(0.000001,0.000001,0.01,0.000001); 
+	MotionModel mm(0.0001,0.0001,0.01,0.01); 
 	vector<wtOdomMsg> particles;
 	int numparticles = 1000;
 	for(int i = 0; i < numparticles; i++)
@@ -158,7 +174,7 @@ int main()
 	MapReader map_obj = MapReader(path_map);
 	vector<vector<int>> occupancy_map = map_obj.get_map();
 
-	int num_particles = 4000;
+	int num_particles = 5000;
 	// vector<wtOdomMsg> particles = init_particles_random(num_particles, map_obj);
 	vector<wtOdomMsg> X_bar_init = init_particles_freespace(num_particles, map_obj);
 
@@ -181,11 +197,12 @@ int main()
 	std::string logfile;
 	std::ifstream infile(path_log);
 
-	MotionModel motion(0.00001,0.005,0.005,0.00001);
+	MotionModel motion(0.0001,0.0001,0.01,0.01);
 	SensorModel sensor(map_obj);
 	Resampling resampler;
 
 	bool vis_flag = true;
+	bool save_episode = false;
 
 	bool first_time_idx = true;
 
@@ -242,8 +259,10 @@ int main()
 
 		if(vis_flag)
 			visualize_map_with_particles(map_obj, X_bar);
+		if(save_episode)
+			save_img(map_obj, X_bar, time_step);
 		
-		double minWt = 0.;
+		double minWt = 10000000.0;
 		for(int i=0; i<num_particles; i++)
 		{
 			// Motion model
@@ -256,14 +275,14 @@ int main()
 				int sizeLas = ranges.size();
 
 				vector<int> z_t_short;
-				for(int k=0; k<sizeLas; k+=4)
+				for(int k=0; k<sizeLas; k+=5)
 					z_t_short.push_back(ranges[k]);
 				// cout << "num lasers: " << z_t_short.size() << endl;
 				double w_t = sensor.beam_range_finder_model(z_t_short, x_t1);				
 				minWt = min(w_t, minWt);
 
 				// cout<<"wt after sensor model is "<<w_t<<endl;
-				X_bar_new[i] = wtOdomMsg(x_t1, w_t);				
+				X_bar_new[i] = wtOdomMsg(x_t1, w_t);			
 			}
 			else{
 				// cout<<"entered imu sensor model"<<endl;
@@ -282,10 +301,6 @@ int main()
 		// Resampling
 		X_bar = resampler.low_variance_sampler(X_bar, sumWts, minWt);
 
-		// cout<< "After resampling at time step "<< time_step << endl;
-
-		// if(vis_flag)
-		// 	visualize_map_with_particles(map_obj, X_bar);
 	}
 
 	return 0;
