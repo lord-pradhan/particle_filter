@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <ctime>
+#include <thread>
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
@@ -165,16 +166,20 @@ void test_sensor_model(MapReader &map_obj)
 
 }
 
+
+void pfupdate(int i, vector<wtOdomMsg> &X_bar, vector<wtOdomMsg> &X_bar_new, MotionModel &motion, 
+	          odomMsg &u_t0, odomMsg &u_t1, char &meas_type, vector<int> &ranges, SensorModel &sensor);
+
 int main()
 {
 
 	const char* path_map = "data/map/wean.dat";
-	const char* path_log = "data/log/robotdata4.log";
+	const char* path_log = "data/log/robotdata3.log";
 
 	MapReader map_obj = MapReader(path_map);
 	vector<vector<int>> occupancy_map = map_obj.get_map();
 
-	int num_particles = 5000;
+	int num_particles = 10000;
 	// vector<wtOdomMsg> particles = init_particles_random(num_particles, map_obj);
 	vector<wtOdomMsg> X_bar_init = init_particles_freespace(num_particles, map_obj);
 
@@ -183,12 +188,12 @@ int main()
 	if(visualize_initial)
 		visualize_map_with_particles(map_obj, X_bar_init);
 
-	bool motionmodel_test = true;
+	bool motionmodel_test = false;
 
 	if(motionmodel_test)
 		test_motion_model(map_obj);
 
-	bool sensormodel_test = true;
+	bool sensormodel_test = false;
 
 	if(sensormodel_test)
 		test_sensor_model(map_obj);
@@ -202,8 +207,8 @@ int main()
 	SensorModel sensor(map_obj);
 	Resampling resampler;
 
-	bool vis_flag = true;
-	bool save_episode = false;
+	bool vis_flag = false;
+	bool save_episode = true;
 
 	bool first_time_idx = true;
 
@@ -263,31 +268,14 @@ int main()
 		if(save_episode)
 			save_img(map_obj, X_bar, time_step);
 				
-		for(int i=0; i<num_particles; i++)
-		{
-			// Motion model
-			odomMsg x_t0(X_bar[i].x, X_bar[i].y, X_bar[i].theta);
-			odomMsg x_t1 = motion.update(u_t0, u_t1, x_t0);
+		vector<thread> threads;
 
-			// Sensor model
-			if(meas_type=='L'){
-				// cout<<"entered lidar sensor model"<<endl;
-				int sizeLas = ranges.size();
+	    for(int i = 0; i < num_particles; i++)
+	        threads.push_back(thread(pfupdate, i, std::ref(X_bar), std::ref(X_bar_new), std::ref(motion),
+	                                 std::ref(u_t0), std::ref(u_t1), std::ref(meas_type), std::ref(ranges), std::ref(sensor)));
 
-				vector<int> z_t_short;
-				for(int k=0; k<sizeLas; k+=5)
-					z_t_short.push_back(ranges[k]);
-				// cout << "num lasers: " << z_t_short.size() << endl;
-				double w_t = sensor.beam_range_finder_model(z_t_short, x_t1);								
-
-				// cout<<"wt after sensor model is "<<w_t<<endl;
-				X_bar_new[i] = wtOdomMsg(x_t1, w_t);			
-			}
-			else{
-				// cout<<"entered imu sensor model"<<endl;
-				X_bar_new[i] = wtOdomMsg(x_t1, X_bar[i].wt);
-			}			
-		}
+	    for (auto &th : threads)
+	        th.join();
 
 		// calc normalization of wts
 		double minWt = 0.0;
@@ -309,4 +297,30 @@ int main()
 	}
 	cout<<"returning"<<endl;
 	return 0;
+}
+
+void pfupdate(int i, vector<wtOdomMsg> &X_bar, vector<wtOdomMsg> &X_bar_new, MotionModel &motion, 
+	          odomMsg &u_t0, odomMsg &u_t1, char &meas_type, vector<int> &ranges, SensorModel &sensor)
+{
+
+	// Motion model
+	odomMsg x_t0(X_bar[i].x, X_bar[i].y, X_bar[i].theta);
+	odomMsg x_t1 = motion.update(u_t0, u_t1, x_t0);
+
+	// Sensor model
+	if(meas_type=='L'){
+		int sizeLas = ranges.size();
+
+		vector<int> z_t_short;
+		for(int k=0; k<sizeLas; k+=1)
+			z_t_short.push_back(ranges[k]);
+
+		double w_t = sensor.beam_range_finder_model(z_t_short, x_t1);			
+		X_bar_new[i] = wtOdomMsg(x_t1, w_t);	
+	}
+	else
+	{
+		X_bar_new[i] = wtOdomMsg(x_t1, X_bar[i].wt);
+	}			
+
 }
